@@ -13,6 +13,7 @@ const config = {
 try { fs.rmSync("exports/", {recursive: true}) } catch{}
 try { fs.mkdirSync("exports/") } catch{}
 try { fs.mkdirSync("exports/pages/") } catch{}
+try { fs.mkdirSync("exports/room-tables/") } catch{}
 try { fs.mkdirSync("exports/subjectname/") } catch{}
 try { fs.mkdirSync("exports/box/") } catch{}
 
@@ -23,14 +24,30 @@ async function main() {
 
   for await (const page of doc) {
     i++
+
     const originPath = `exports/pages/${i}.png`
     const outPath = `exports/subjectname/${i}.png`
+
     fs.writeFileSync(originPath, page)
 
     await sharp(originPath).extract({ width: 1089, height: 80, left: 248, top: 59 }).toFile(outPath)
 
-    const roomCode = (await tesseract.recognize(outPath, config)).trim().replaceAll("\n", "").replaceAll("|", "").replaceAll(",", "").trim()
+    let roomCode = (await tesseract.recognize(outPath, config)).trim().replaceAll("\n", "").replaceAll("|", "").replaceAll(",", "").replaceAll(" ", "").trim()
     //const roomCode = "40" + i
+
+    if (roomCode == "") {
+      roomCode = "ห้องลูกเสือ"
+    }
+
+    if (roomCode == "aAWUNNSAIAAS") {
+      roomCode = "สวนพุทธศาสตร์"
+    }
+
+    if (roomCode == "UUWIANA") {
+      roomCode = "หน้าห้องลูกเสือ"
+    }
+
+    fs.copyFileSync(originPath, `exports/room-tables/${roomCode}.png`)
 
     outData[roomCode] = []
 
@@ -104,8 +121,6 @@ async function main() {
       await Promise.all(promises)
 
       outData[roomCode].push(rowData)
-
-      fs.writeFileSync("out.json", JSON.stringify(outData))
     }
 
     debugSharp.composite(debugPoints)
