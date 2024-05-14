@@ -8,6 +8,7 @@ config.js
 
 # static ignore
 static_host/app/doc-thumbnails
+!static_host/app/doc-thumbnails/static
 static_host/app/docs.json
 static_host/ข่าวประชาสัมพันธ์
 static_host/announcements.json
