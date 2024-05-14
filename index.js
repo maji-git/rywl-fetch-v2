@@ -75,9 +75,11 @@ function setupFolders() {
 }
 
 async function writeFiles() {
-    fs.writeFileSync("static_host/announcements.json", JSON.stringify((await getAnnouncements())))
-    fs.writeFileSync("static_host/timetables.json", JSON.stringify((await getTimetables())))
+    fs.writeFileSync("static_host/app/announcements.json", JSON.stringify((await getAnnouncements())))
+    fs.writeFileSync("static_host/app/banners.json", JSON.stringify((await getBanners())))
+    fs.writeFileSync("static_host/app/timetables.json", JSON.stringify((await getTimetables())))
     await downloadFile("https://rayongwit.ac.th/%E0%B8%82%E0%B9%88%E0%B8%B2%E0%B8%A7%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%8A%E0%B8%B2%E0%B8%AA%E0%B8%B1%E0%B8%A1%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B8%98%E0%B9%8C/", "static_host/ข่าวประชาสัมพันธ์/index.html")
+    await downloadFile("https://rayongwit.ac.th/", "static_host/index.html")
 }
 
 const fetchAnnouncements = async () => {
