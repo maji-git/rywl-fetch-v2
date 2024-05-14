@@ -1,8 +1,17 @@
 import { pdf } from "pdf-to-img"
 import fs from "fs"
 import axios from "axios"
+import path from "path"
+import { fileURLToPath } from 'url';
 
-const originDoc = JSON.parse(fs.readFileSync("static_host/app/docs-origin.json", "utf-8"))
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+
+const DOC_ORIGIN_PATH = path.resolve(__dirname, "../static_host/app/docs-origin.json")
+const DOC_PATH = path.resolve(__dirname, "../static_host/app/docs.json")
+
+const originDoc = JSON.parse(fs.readFileSync(DOC_ORIGIN_PATH, "utf-8"))
 
 export async function genDocThumbnails() {
     let docID = -1
@@ -22,12 +31,12 @@ export async function genDocThumbnails() {
         const doc = await pdf("temp.pdf", { scale: 0.7 })
 
         for await (const page of doc) {
-            fs.writeFileSync(`static_host/app/doc-thumbnails/${docID}.png`, page)
+            fs.writeFileSync(path.resolve(__dirname, `../static_host/app/doc-thumbnails/${docID}.png`), page)
             break
         }
 
         originDoc[docID]['thumbnail'] = `${docID}.png`
     }
 
-    fs.writeFileSync("static_host/app/docs.json", JSON.stringify(originDoc))
+    fs.writeFileSync(DOC_PATH, JSON.stringify(originDoc))
 }
