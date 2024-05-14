@@ -13,7 +13,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=node /rywl-fetch-v2/index.js
+ExecStart=bash /rywl-fetch-v2/run.sh
 
 [Install]
 WantedBy=multi-user.target`) } catch(e) {console.log(e)}
