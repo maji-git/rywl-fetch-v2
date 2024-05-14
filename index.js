@@ -171,6 +171,7 @@ async function mainLoop() {
     await writeFiles()
     console.log("CHECKUP COMPLETED")
     Blynk.updateData("V0", dtFormat.format(new Date()))
+    Blynk.updateData("V4", (await si.cpuTemperature()).main)
 }
 
 async function dailyLoop() {
