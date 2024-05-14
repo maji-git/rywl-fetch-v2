@@ -2,6 +2,9 @@ import axios from 'axios'
 import config from './config.js'
 
 export async function updateData(pin, data) {
+    if (data == null) {
+        return
+    }
     await axios.get(`https://blynk.cloud/external/api/update?token=${config.BLYNK_TOKEN}&pin=${pin}&value=${data}`)
 }
 

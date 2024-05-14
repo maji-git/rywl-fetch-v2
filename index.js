@@ -18,7 +18,6 @@ const PORT = process.env.PORT || 7034
 expressApp.use(cors({
     origin: "*"
 }))
-expressApp.use(express.static('static_host'))
 
 import { fileURLToPath } from 'url';
 import { genDocThumbnails } from "./docgen/docs-thumbnails.js";
@@ -33,6 +32,8 @@ const __dirname = path.dirname(__filename);
 
 const announcementCachePath = path.resolve(__dirname, "cache/announcement-cache.json")
 const bannerCachePath = path.resolve(__dirname, "cache/banners-cache.json")
+
+expressApp.use(express.static(path.resolve(__dirname, 'static_host')))
 
 const dtFormat = new Intl.DateTimeFormat('en',
     {
