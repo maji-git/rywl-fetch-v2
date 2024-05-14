@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 
 const DOC_ORIGIN_PATH = path.resolve(__dirname, "../static_host/app/docs-origin.json")
 const DOC_PATH = path.resolve(__dirname, "../static_host/app/docs.json")
+const DOC_THUMB_STATIC_PATH = path.resolve(__dirname, "../static_host/app/doc-thumb-static")
 
 const originDoc = JSON.parse(fs.readFileSync(DOC_ORIGIN_PATH, "utf-8"))
 
@@ -36,6 +37,11 @@ export async function genDocThumbnails() {
         }
 
         originDoc[docID]['thumbnail'] = `${docID}.png`
+    }
+
+    for (const pn of fs.readdirSync(DOC_THUMB_STATIC_PATH)) {
+        const fullpath = path.resolve(DOC_THUMB_STATIC_PATH, pn)
+        fs.writeFileSync(path.resolve(__dirname, `../static_host/app/doc-thumbnails/${pn}`), fs.readFileSync(fullpath))
     }
 
     fs.writeFileSync(DOC_PATH, JSON.stringify(originDoc))
