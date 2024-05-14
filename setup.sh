@@ -1,4 +1,4 @@
-sudo chmod -R 755 /rywl-fetch-v2/
+sudo chmod -R 755 ../
 sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg
 sudo mkdir -p /etc/apt/keyrings
