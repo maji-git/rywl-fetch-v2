@@ -1,8 +1,16 @@
-const ttlib = require("./libs/timetables.js")
-const fs = require("fs")
-const docsCxt = JSON.parse(fs.readFileSync("public/app/docs-origin.json", "utf-8"))
+import * as ttlib from "../lib/timetables.js"
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+const DOC_ORIGIN_PATH = path.resolve(__dirname, "../static_host/app/docs-origin.json")
 
 async function main() {
+    const docsCxt = JSON.parse(fs.readFileSync(DOC_ORIGIN_PATH, "utf-8"))
+
     const tt = await ttlib.getTimetables()
 
     for (const t of tt) {
@@ -19,7 +27,7 @@ async function main() {
         }
     }
 
-    fs.writeFileSync("public/app/docs-origin.json", JSON.stringify(docsCxt, null, "\t"))
+    fs.writeFileSync(DOC_ORIGIN_PATH, JSON.stringify(docsCxt, null, "\t"))
 }
 
 main()
