@@ -65,11 +65,11 @@ async function main() {
         `;
     const svgBuffer = Buffer.from(svgImage);
 
-    for (let y = 226; y < 974 + 188; y += 188) {
+    for (let y = 230; y < 1121; y += 181 + 3) {
       let rowData = new Array(10).fill(0)
       let ri = -1
 
-      for (let x = 178; x < 1420 + 138; x += 138) {
+      for (let x = 190; x < 1650; x += 146 + 3) {
         ri += 1
         i2 = i2 + 1
 
@@ -83,7 +83,7 @@ async function main() {
 
           console.log(boxOutPath, "Working...")
 
-          const sharpUser = sharp(originPath).extract({ width: 138 - 24, height: 188 - 24, left: tx + 12, top: ty + 12 })
+          const sharpUser = sharp(originPath).extract({ width: 138 - 30, height: 188 - 30, left: tx, top: ty})
           sharpUser.resize(50)
           await sharpUser.toFile(boxOutPath)
 
