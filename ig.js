@@ -11,11 +11,15 @@ export async function init() {
     ig = new IgApiClient()
     ig.state.generateDevice(config.IG_USERNAME)
 
-    await ig.simulate.preLoginFlow();
+    try {
+        await ig.simulate.preLoginFlow();
 
-    const loggedInUser = await ig.account.login(config.IG_USERNAME, config.IG_PASSWORD)
+        const loggedInUser = await ig.account.login(config.IG_USERNAME, config.IG_PASSWORD)
 
-    Blynk.writeConsole(`IG Logged in as ${loggedInUser.username}`)
+        Blynk.writeConsole(`IG Logged in as ${loggedInUser.username}`)
+    } catch (err) {
+        console.error("IG ERROR: ", err)
+    }
 }
 
 export async function postImg(buffer, caption) {
