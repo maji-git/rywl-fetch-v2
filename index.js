@@ -61,8 +61,8 @@ function setupFolders() {
         fs.mkdirSync("static_host/ข่าวประชาสัมพันธ์")
     }
 
-    if (!fs.existsSync("cache")) {
-        fs.mkdirSync("cache")
+    if (!fs.existsSync("cache2")) {
+        fs.mkdirSync("cache2")
     }
 
     if (!fs.existsSync("cache2/announcement-cache.json")) {
