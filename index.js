@@ -30,8 +30,8 @@ const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(__filename);
 
-const announcementCachePath = path.resolve(__dirname, "cache/announcement-cache.json")
-const bannerCachePath = path.resolve(__dirname, "cache/banners-cache.json")
+const announcementCachePath = path.resolve(__dirname, "cache2/announcement-cache.json")
+const bannerCachePath = path.resolve(__dirname, "cache2/banners-cache.json")
 
 expressApp.use(express.static(path.resolve(__dirname, 'static_host')))
 
@@ -65,18 +65,24 @@ function setupFolders() {
         fs.mkdirSync("cache")
     }
 
-    if (!fs.existsSync("cache/announcement-cache.json")) {
-        fs.writeFileSync("cache/announcement-cache.json", "[]")
+    if (!fs.existsSync("cache2/announcement-cache.json")) {
+        fs.writeFileSync("cache2/announcement-cache.json", "[]")
     }
 
-    if (!fs.existsSync("cache/banners-cache.json")) {
-        fs.writeFileSync("cache/banners-cache.json", "[]")
+    if (!fs.existsSync("cache2/banners-cache.json")) {
+        fs.writeFileSync("cache2/banners-cache.json", "[]")
     }
 }
 
 async function writeFiles() {
     fs.writeFileSync("static_host/app/announcements.json", JSON.stringify((await getAnnouncements())))
-    fs.writeFileSync("static_host/app/banners.json", JSON.stringify((await getBanners())))
+    const banners = await getBanners()
+    const bannerOldData = []
+    for (const b of banners) {
+        bannerOldData.push(b.url)
+    }
+    fs.writeFileSync("static_host/app/banners.json", JSON.stringify(bannerOldData))
+    fs.writeFileSync("static_host/app/banners_v2.json", JSON.stringify(banners))
     fs.writeFileSync("static_host/app/timetables.json", JSON.stringify((await getTimetables())))
     await downloadFile("https://rayongwit.ac.th/%E0%B8%82%E0%B9%88%E0%B8%B2%E0%B8%A7%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%8A%E0%B8%B2%E0%B8%AA%E0%B8%B1%E0%B8%A1%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B8%98%E0%B9%8C/", "static_host/ข่าวประชาสัมพันธ์/index.html")
     await downloadFile("https://rayongwit.ac.th/", "static_host/index.html")
@@ -133,14 +139,19 @@ const fetchBanners = async () => {
 
     if (cacheTitles.length == 0) {
         cacheTitles = banners
-        fs.writeFileSync(bannerCachePath, JSON.stringify(cacheTitles))
+        const b = []
+        for (const a of banners) {
+            b.push(a.url)
+        }
+
+        fs.writeFileSync(bannerCachePath, JSON.stringify(b))
     } else {
         const newBanners = []
 
         for (const a of banners) {
-            if (cacheTitles.includes(a) == false) {
-                Blynk.writeConsole(`New banner detected ${a}`)
-                newBanners.push(a)
+            if (cacheTitles.includes(a.url) == false) {
+                Blynk.writeConsole(`New banner detected ${a.url}`)
+                newBanners.push(a.url)
             }
         }
 
