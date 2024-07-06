@@ -1,4 +1,4 @@
-import { getAnnouncements, getBanners } from "./lib/announcements.js";
+import { getAnnouncements, getBanners, getPDFsInURL } from "./lib/announcements.js";
 import fs from "fs";
 import { getTimetables } from "./lib/timetables.js";
 import axios from "axios";
@@ -11,9 +11,12 @@ import path from 'path'
 import admin from 'firebase-admin'
 import express from "express"
 import cors from "cors"
+import compression from "compression"
 
 const expressApp = express()
 const PORT = process.env.PORT || 7034
+
+expressApp.use(compression())
 
 expressApp.use(cors({
     origin: "*"
@@ -21,6 +24,7 @@ expressApp.use(cors({
 
 import { fileURLToPath } from 'url';
 import { genDocThumbnails } from "./docgen/docs-thumbnails.js";
+import { newssum } from "./lib/newssum.js";
 
 const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey)
@@ -75,7 +79,8 @@ function setupFolders() {
 }
 
 async function writeFiles() {
-    fs.writeFileSync("static_host/app/announcements.json", JSON.stringify((await getAnnouncements())))
+    const announcements = await getAnnouncements()
+    fs.writeFileSync("static_host/app/announcements.json", JSON.stringify((announcements)))
     const banners = await getBanners()
     const bannerOldData = []
     for (const b of banners) {
@@ -84,8 +89,9 @@ async function writeFiles() {
     fs.writeFileSync("static_host/app/banners.json", JSON.stringify(bannerOldData))
     fs.writeFileSync("static_host/app/banners_v2.json", JSON.stringify(banners))
     fs.writeFileSync("static_host/app/timetables.json", JSON.stringify((await getTimetables())))
-    await downloadFile("https://rayongwit.ac.th/%E0%B8%82%E0%B9%88%E0%B8%B2%E0%B8%A7%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%8A%E0%B8%B2%E0%B8%AA%E0%B8%B1%E0%B8%A1%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B8%98%E0%B9%8C/", "static_host/ข่าวประชาสัมพันธ์/index.html")
-    await downloadFile("https://rayongwit.ac.th/", "static_host/index.html")
+    const newsSum = await newssum(announcements)
+
+    fs.writeFileSync("static_host/app/newssum.json", JSON.stringify(newsSum))
 }
 
 const fetchAnnouncements = async () => {
@@ -193,6 +199,25 @@ async function dailyLoop() {
     console.log("Daily Loop COMPLETED")
 }
 
+expressApp.get("/app/d/news/get_pdfs.json", async (req, res) => {
+    const pdfreq = await getPDFsInURL(req.query.url ?? "")
+
+    res.json(pdfreq ?? {})
+})
+
+expressApp.get("/proxy", async (req, res) => {
+    const url = req.query.url
+
+    if (url == null || url.startsWith("https://rayongwit.ac.th") == false) {
+        return
+    }
+
+    const file = await axios.get(url, {responseType: "arraybuffer"})
+
+    res.contentType(file.headers.getContentType() ?? "html")
+    res.send(file.data)
+})
+
 async function bootUp() {
     console.log("Booting Up...")
     setupFolders()
@@ -212,4 +237,5 @@ async function bootUp() {
     mainLoop()
 }
 
+console.log("env: ", process.env.NODE_ENV ?? "prod")
 bootUp()

@@ -13,6 +13,6 @@ static_host/app/docs.json
 static_host/ข่าวประชาสัมพันธ์
 static_host/announcements.json
 static_host/timetables.json
-static_host/room-avaib.json
+static_host/app/newssum.json
 cache/
 cache2/

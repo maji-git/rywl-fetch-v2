@@ -14,6 +14,9 @@ export async function writeConsole(txt) {
 }
 
 export async function getData(pin) {
+    if ((pin == "V1" || pin == "V2") && process.env.NODE_ENV == "dev") {
+        return 0
+    }
     const res = await axios.get(`https://blynk.cloud/external/api/get?token=${config.BLYNK_TOKEN}&pin=${pin}`)
     return res.data
 }
