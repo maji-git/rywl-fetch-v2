@@ -16,6 +16,7 @@ import compression from "compression"
 const expressApp = express()
 const PORT = process.env.PORT || 7034
 
+let loopRunning = false
 expressApp.use(compression())
 
 expressApp.use(cors({
@@ -25,6 +26,7 @@ expressApp.use(cors({
 import { fileURLToPath } from 'url';
 import { genDocThumbnails } from "./docgen/docs-thumbnails.js";
 import { newssum } from "./lib/newssum.js";
+import { initAI } from "./lib/ai.js";
 
 const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey)
@@ -36,6 +38,8 @@ const __dirname = path.dirname(__filename);
 
 const announcementCachePath = path.resolve(__dirname, "cache2/announcement-cache.json")
 const bannerCachePath = path.resolve(__dirname, "cache2/banners-cache.json")
+
+let pdfFileCache = {}
 
 expressApp.use(express.static(path.resolve(__dirname, 'static_host')))
 
@@ -76,11 +80,11 @@ function setupFolders() {
     if (!fs.existsSync("cache2/banners-cache.json")) {
         fs.writeFileSync("cache2/banners-cache.json", "[]")
     }
+
+    initAI()
 }
 
 async function writeFiles() {
-    const announcements = await getAnnouncements()
-    fs.writeFileSync("static_host/app/announcements.json", JSON.stringify((announcements)))
     const banners = await getBanners()
     const bannerOldData = []
     for (const b of banners) {
@@ -89,6 +93,10 @@ async function writeFiles() {
     fs.writeFileSync("static_host/app/banners.json", JSON.stringify(bannerOldData))
     fs.writeFileSync("static_host/app/banners_v2.json", JSON.stringify(banners))
     fs.writeFileSync("static_host/app/timetables.json", JSON.stringify((await getTimetables())))
+
+    const announcements = await getAnnouncements()
+    fs.writeFileSync("static_host/app/announcements.json", JSON.stringify((announcements)))
+
     const newsSum = await newssum(announcements)
 
     fs.writeFileSync("static_host/app/newssum.json", JSON.stringify(newsSum))
@@ -186,21 +194,35 @@ const fetchBanners = async () => {
 }
 
 async function mainLoop() {
+    if (loopRunning) {
+        return
+    }
+    loopRunning = true
     await fetchAnnouncements()
     await fetchBanners()
     await writeFiles()
     console.log("CHECKUP COMPLETED")
+    loopRunning = false
     Blynk.updateData("V0", dtFormat.format(new Date()))
     Blynk.updateData("V4", (await si.cpuTemperature()).main)
 }
 
 async function dailyLoop() {
+    pdfFileCache = {}
     await genDocThumbnails()
     console.log("Daily Loop COMPLETED")
 }
 
 expressApp.get("/app/d/news/get_pdfs.json", async (req, res) => {
+    if (pdfFileCache[req.query.url]) {
+        res.json(pdfFileCache[req.query.url])
+        return
+    }
     const pdfreq = await getPDFsInURL(req.query.url ?? "")
+    
+    if (pdfreq) {
+        pdfFileCache[req.query.url] = pdfreq
+    }
 
     res.json(pdfreq ?? {})
 })
