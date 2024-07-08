@@ -32,6 +32,9 @@ const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey)
 });
 
+const IG_REFETCH_COUNT = 360
+let igRefreshCur = 0
+
 const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(__filename);
@@ -81,8 +84,14 @@ function setupFolders() {
         fs.writeFileSync("cache2/banners-cache.json", "[]")
     }
 
+    if (!fs.existsSync("cache2/ig-cache.json")) {
+        fs.writeFileSync("cache2/ig-cache.json", "[]")
+    }
+
     initAI()
 }
+
+let igNewsCache
 
 async function writeFiles() {
     const banners = await getBanners()
@@ -97,7 +106,13 @@ async function writeFiles() {
     const announcements = await getAnnouncements()
     fs.writeFileSync("static_host/app/announcements.json", JSON.stringify((announcements)))
 
-    const newsSum = await newssum(announcements)
+    igRefreshCur = igRefreshCur - 1
+
+    if (igRefreshCur < 0) {
+        igRefreshCur = IG_REFETCH_COUNT
+        igNewsCache = await IG.getPostFromSources()
+    }
+    const newsSum = await newssum(announcements, igNewsCache)
 
     fs.writeFileSync("static_host/app/newssum.json", JSON.stringify(newsSum))
 }
