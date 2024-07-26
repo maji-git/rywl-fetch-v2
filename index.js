@@ -32,6 +32,8 @@ const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey)
 });
 
+const messaging = admin.messaging(app)
+
 const IG_REFETCH_COUNT = 360
 let igRefreshCur = 0
 
