@@ -27,6 +27,7 @@ const igSources = [
 ]
 
 export async function init() {
+    return
     ig = new IgApiClient()
     ig.state.generateDevice(config.IG_USERNAME)
 
@@ -98,7 +99,8 @@ export async function getPostFromSources() {
     */
 }
 
-export async function postImg(buffer, caption) {
+export async function postImg(buffer, caption) {\
+    return
     if (!ig) {
         console.error("IG not available, forwarding reauth")
         init()
