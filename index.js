@@ -28,6 +28,14 @@ import { genDocThumbnails } from "./docgen/docs-thumbnails.js";
 import { newssum } from "./lib/newssum.js";
 import { initAI } from "./lib/ai.js";
 
+axios.interceptors.request.use(function (config) {
+    config.url = config.url.replace("https://", "//").replace("//", "https://")
+    return config;
+}, function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+});
+
 const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey)
 });
@@ -236,7 +244,7 @@ expressApp.get("/app/d/news/get_pdfs.json", async (req, res) => {
         return
     }
     const pdfreq = await getPDFsInURL(req.query.url ?? "")
-    
+
     if (pdfreq) {
         pdfFileCache[req.query.url] = pdfreq
     }
@@ -251,7 +259,7 @@ expressApp.get("/proxy", async (req, res) => {
         return
     }
 
-    const file = await axios.get(url, {responseType: "arraybuffer"})
+    const file = await axios.get(url, { responseType: "arraybuffer" })
 
     res.contentType(file.headers.getContentType() ?? "html")
     res.send(file.data)
